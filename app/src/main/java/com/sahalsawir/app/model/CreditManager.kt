@@ -8,7 +8,10 @@ object CreditManager {
     private const val KEY_CREDITS = "credits_remaining"
     private const val KEY_FIRST_USE = "first_use_timestamp"
     private const val KEY_PREMIUM = "is_premium_active"
-    private const val MAX_DAILY_CREDITS = 3
+    private const val KEY_MAX_DAILY = "max_daily_credits"
+    private const val KEY_MONTHLY_PRICE_CENTS = "monthly_price_cents"
+    private const val DEFAULT_MAX_DAILY = 3
+    private const val DEFAULT_MONTHLY_PRICE_CENTS = 100 // $1.00
     private const val RESET_WINDOW_MILLIS = 24L * 60L * 60L * 1000L
 
     fun isPremium(context: Context): Boolean {
@@ -21,19 +24,47 @@ object CreditManager {
         prefs.edit().putBoolean(KEY_PREMIUM, status).apply()
     }
 
-    fun getRemainingCredits(context: Context): Int {
-        if (isPremium(context)) return 9999
+    fun getMaxDailyCredits(context: Context): Int {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getInt(KEY_MAX_DAILY, DEFAULT_MAX_DAILY)
+    }
+
+    fun setMaxDailyCredits(context: Context, value: Int) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putInt(KEY_MAX_DAILY, value).apply()
+    }
+
+    fun getMonthlyPriceCents(context: Context): Int {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getInt(KEY_MONTHLY_PRICE_CENTS, DEFAULT_MONTHLY_PRICE_CENTS)
+    }
+
+    fun setMonthlyPriceCents(context: Context, cents: Int) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putInt(KEY_MONTHLY_PRICE_CENTS, cents).apply()
+    }
+
+    fun getMonthlyPriceDisplay(context: Context): String {
+        val cents = getMonthlyPriceCents(context)
+        val dollars = cents / 100
+        val remainder = cents % 100
+        return "$${dollars}.${String.format("%02d", remainder)}"
+    }
+
+    fun getRemainingCredits(context: Context): Int {
+        if (isPremium(context)) return Int.MAX_VALUE
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val maxDaily = getMaxDailyCredits(context)
         val firstUse = prefs.getLong(KEY_FIRST_USE, 0L)
         val currentTime = System.currentTimeMillis()
         if (firstUse > 0L && (currentTime - firstUse) >= RESET_WINDOW_MILLIS) {
             prefs.edit()
-                .putInt(KEY_CREDITS, MAX_DAILY_CREDITS)
+                .putInt(KEY_CREDITS, maxDaily)
                 .putLong(KEY_FIRST_USE, 0L)
                 .apply()
-            return MAX_DAILY_CREDITS
+            return maxDaily
         }
-        return prefs.getInt(KEY_CREDITS, MAX_DAILY_CREDITS)
+        return prefs.getInt(KEY_CREDITS, maxDaily)
     }
 
     fun consumeCredit(context: Context): Boolean {
@@ -43,7 +74,7 @@ object CreditManager {
         if (currentCredits <= 0) return false
         val newCredits = currentCredits - 1
         val edit = prefs.edit().putInt(KEY_CREDITS, newCredits)
-        if (currentCredits == MAX_DAILY_CREDITS) {
+        if (currentCredits == getMaxDailyCredits(context)) {
             edit.putLong(KEY_FIRST_USE, System.currentTimeMillis())
         }
         edit.apply()

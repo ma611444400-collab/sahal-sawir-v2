@@ -40,11 +40,13 @@ fun PricingScreen(onBack: () -> Unit) {
     var showCheckoutModal by remember { mutableStateOf(false) }
     var isCheckingOut by remember { mutableStateOf(false) }
     var paymentMethod by remember { mutableStateOf("EVC") }
-    var evcPhone by remember { mutableStateOf("+252611444400") }
+    var evcPhone by remember { mutableStateOf("0611444400") }
     var evcPin by remember { mutableStateOf("") }
     var cardNumber by remember { mutableStateOf("") }
     var expirationDate by remember { mutableStateOf("") }
     var cvv by remember { mutableStateOf("") }
+
+    val priceDisplay = CreditManager.getMonthlyPriceDisplay(context)
 
     Scaffold(
         containerColor = DarkBackground,
@@ -100,7 +102,7 @@ fun PricingScreen(onBack: () -> Unit) {
                             }
                             Text("Xidhmada Sare ee Bilicda", color = TextSecondary, fontSize = 12.sp)
                         }
-                        Text("$1.00 /bil", color = PremiumGold, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text(priceDisplay, color = PremiumGold, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     }
                     HorizontalDivider(color = OutlineBorder)
                     listOf("Hagaajin aan xadidnayn", "Ilaa 8x ballaarinta", "Mashiin degdeg ah", "Ma jiraan calaamad biyo ah", "Helitaanka hore ee moodellada").forEach {
@@ -148,13 +150,13 @@ fun PricingScreen(onBack: () -> Unit) {
 
                         Row(modifier = Modifier.fillMaxWidth().background(DarkSurfaceContainer, RoundedCornerShape(12.dp)).padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Box(
-                                modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)).background(if (paymentMethod == "EVC") AccentTeal else Color.Transparent).clickable { paymentMethod = "EVC" }.padding(vertical = 10.dp),
+                                modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)).background(if (paymentMethod == "EVC") AccentTeal else Color.Transparent).clickable { paymentMethod = "EVC" },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text("EVC Plus", color = if (paymentMethod == "EVC") Color.Black else TextSecondary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             }
                             Box(
-                                modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)).background(if (paymentMethod == "STRIPE") AccentTeal else Color.Transparent).clickable { paymentMethod = "STRIPE" }.padding(vertical = 10.dp),
+                                modifier = Modifier.weight(1f).clip(RoundedCornerShape(8.dp)).background(if (paymentMethod == "STRIPE") AccentTeal else Color.Transparent).clickable { paymentMethod = "STRIPE" },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text("Kaarka Bankiga", color = if (paymentMethod == "STRIPE") Color.Black else TextSecondary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
@@ -166,20 +168,20 @@ fun PricingScreen(onBack: () -> Unit) {
                                 Card(colors = CardDefaults.cardColors(containerColor = DarkSurfaceContainer), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
                                     Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                         Text("Ku bixi lacagta lambarka EVC Plus:", color = TextSecondary, fontSize = 11.sp)
-                                        Text("+252611444400", color = PremiumGold, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                                        Text("Dial: *712*611444400*1# si aad u wareejiso \$1.00", color = AccentTeal, fontSize = 11.sp)
+                                        Text(evcPhone, color = PremiumGold, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                        Text("Dial: *712*${evcPhone}*1# si aad u wareejiso ${priceDisplay}", color = AccentTeal, fontSize = 11.sp)
                                     }
                                 }
-                                OutlinedTextField(value = evcPhone, onValueChange = { evcPhone = it }, label = { Text("Lambarkaaga EVC Plus") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PremiumGold, unfocusedBorderColor = OutlineBorder), modifier = Modifier.fillMaxWidth())
-                                OutlinedTextField(value = evcPin, onValueChange = { evcPin = it }, label = { Text("PIN-ka (Ikhtiyaari)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PremiumGold, unfocusedBorderColor = OutlineBorder), modifier = Modifier.fillMaxWidth())
+                                OutlinedTextField(value = evcPhone, onValueChange = { evcPhone = it }, label = { Text("Lambarkaaga EVC Plus") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone))
+                                OutlinedTextField(value = evcPin, onValueChange = { evcPin = it }, label = { Text("PIN-ka (Ikhtiyaari)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                             }
                         } else {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Waxaad u dalbanaysaa PRO bishii \$1.00.", color = TextSecondary, fontSize = 13.sp)
-                                OutlinedTextField(value = cardNumber, onValueChange = { cardNumber = it }, label = { Text("Lambarka Kaarka") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PremiumGold, unfocusedBorderColor = OutlineBorder), modifier = Modifier.fillMaxWidth())
+                                Text("Waxaad u dalbanaysaa PRO bishii ${priceDisplay}.", color = TextSecondary, fontSize = 13.sp)
+                                OutlinedTextField(value = cardNumber, onValueChange = { cardNumber = it }, label = { Text("Lambarka Kaarka") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    OutlinedTextField(value = expirationDate, onValueChange = { expirationDate = it }, label = { Text("MM/YY") }, modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PremiumGold, unfocusedBorderColor = OutlineBorder))
-                                    OutlinedTextField(value = cvv, onValueChange = { cvv = it }, label = { Text("CVV") }, modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PremiumGold, unfocusedBorderColor = OutlineBorder))
+                                    OutlinedTextField(value = expirationDate, onValueChange = { expirationDate = it }, label = { Text("MM/YY") }, modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                                    OutlinedTextField(value = cvv, onValueChange = { cvv = it }, label = { Text("CVV") }, modifier = Modifier.weight(1f), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
                                 }
                             }
                         }
@@ -201,7 +203,7 @@ fun PricingScreen(onBack: () -> Unit) {
                             shape = RoundedCornerShape(24.dp),
                             modifier = Modifier.fillMaxWidth().height(52.dp)
                         ) {
-                            Text(if (isCheckingOut) "Xaqiijinaya..." else "Bixi \$1.00 & Kici PRO", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(if (isCheckingOut) "Xaqiijinaya..." else "Bixi ${priceDisplay} & Kici PRO", color = Color.White, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -209,18 +211,3 @@ fun PricingScreen(onBack: () -> Unit) {
         }
     }
 }
-
-@Composable
-fun FAQItem(title: String, description: String) {
-    var expanded by remember { mutableStateOf(false) }
-    Card(colors = CardDefaults.cardColors(containerColor = DarkSurface), shape = RoundedCornerShape(10.dp), modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(title, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            if (expanded) {
-                Spacer(Modifier.height(6.dp))
-                Text(description, color = TextSecondary, fontSize = 12.sp)
-            }
-        }
-    }
-}
-    }
