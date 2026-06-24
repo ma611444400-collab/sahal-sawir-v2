@@ -13,7 +13,7 @@
         android:allowBackup="true"
         android:label="Sahal Sawir"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.DeviceDefault">
+        android:theme="@style/Theme.SahalSawir">
         <activity
             android:name=".MainActivity"
             android:exported="true"
